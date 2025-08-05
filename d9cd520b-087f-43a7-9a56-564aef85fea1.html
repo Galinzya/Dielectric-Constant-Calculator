@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dielectric Constant Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+        }
+        label, input, select {
+            display: block;
+            margin: 10px 0;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 5px;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px;
+            width: 100%;
+        }
+        #result {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h2>Dielectric Constant Calculator</h2>
+    <label for="mode">Select Mode:</label>
+    <select id="mode">
+        <option value="findEr">Find εr (Dielectric Constant)</option>
+        <option value="findFr">Find fr<sup>-2</sup> (GHz<sup>-2</sup>)</option>
+        <option value="findZ">Find z (thickness in mm)</option>
+    </select>
+
+    <label for="z">z (thickness in mm):</label>
+    <input type="number" id="z" step="any">
+
+    <label for="fr2">fr<sup>-2</sup> (GHz<sup>-2</sup>):</label>
+    <input type="number" id="fr2" step="any">
+
+    <button onclick="calculate()">Calculate</button>
+
+    <div id="result"></div>
+
+    <script>
+        function calculate() {
+            const z = parseFloat(document.getElementById('z').value);
+            const fr2 = parseFloat(document.getElementById('fr2').value);
+            const mode = document.getElementById('mode').value;
+            let resultText = "";
+
+            if (mode === "findEr") {
+                if (isNaN(z) || isNaN(fr2)) {
+                    resultText = "Please provide both z and fr⁻².";
+                } else {
+                    const numerator = -fr2 - (-0.0002 * z ** 3 + 0.0044 * z ** 2 - 0.0367 * z + 1.0099);
+                    const denominator = 0.0001 * z ** 3 - 0.0027 * z ** 2 + 0.0262 * z + 0.0344;
+                    const er = numerator / denominator;
+                    resultText = `Dielectric constant (ε<sub>r</sub>) ≈ ${er.toFixed(5)}`;
+                }
+            } else if (mode === "findFr") {
+                if (isNaN(z) || isNaN(fr2)) {
+                    resultText = "Please provide z and εr.";
+                } else {
+                    const numerator = -0.0002 * z ** 3 + 0.0044 * z ** 2 - 0.0367 * z + 1.0099;
+                    const denominator = 0.0001 * z ** 3 - 0.0027 * z ** 2 + 0.0262 * z + 0.0344;
+                    const fr2_calc = -(numerator + denominator * fr2);
+                    resultText = `fr⁻² ≈ ${fr2_calc.toFixed(5)} (GHz⁻²)`;
+                }
+            } else if (mode === "findZ") {
+                resultText = "Solving for z requires numerical solving, which is not supported in this version.";
+            }
+
+            document.getElementById('result').innerHTML = resultText;
+        }
+
+        document.getElementById('mode').addEventListener('change', function () {
+            const mode = this.value;
+            document.getElementById('z').disabled = false;
+            document.getElementById('fr2').disabled = false;
+
+            if (mode === "findEr") {
+                document.getElementById('z').placeholder = "Enter z (mm)";
+                document.getElementById('fr2').placeholder = "Enter fr⁻² (GHz⁻²)";
+            } else if (mode === "findFr") {
+                document.getElementById('z').placeholder = "Enter z (mm)";
+                document.getElementById('fr2').placeholder = "Enter εr";
+            } else if (mode === "findZ") {
+                document.getElementById('z').disabled = true;
+                document.getElementById('z').value = "";
+                document.getElementById('z').placeholder = "Not available";
+            }
+        });
+    </script>
+</body>
+</html>
